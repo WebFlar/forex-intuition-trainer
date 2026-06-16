@@ -25,7 +25,7 @@ export async function GET(request) {
 
   // Calcola range date: da 120 giorni fa a oggi
   const now  = new Date()
-  const from = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000)
+  const from = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
   const fmt  = d => d.toISOString().split('T')[0]
 
   // Polygon forex: C:EURUSD formato
