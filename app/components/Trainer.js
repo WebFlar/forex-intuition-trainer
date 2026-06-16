@@ -1,6 +1,90 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+const ACCESS_PASSWORD = 'mqlsuite2024'
+
+function LoginScreen({ onLogin }) {
+  const [pwd, setPwd] = useState('')
+  const [error, setError] = useState(false)
+  const [shake, setShake] = useState(false)
+
+  function tryLogin() {
+    if (pwd === ACCESS_PASSWORD) {
+      onLogin()
+    } else {
+      setError(true)
+      setShake(true)
+      setTimeout(() => setShake(false), 500)
+    }
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#111' }}>
+      <div style={{
+        background:'#1a1a1a', border:'0.5px solid #2a2a2a', borderRadius:16,
+        padding:'40px 36px', width:'100%', maxWidth:380, textAlign:'center',
+        animation: shake ? 'shake 0.4s ease' : 'none'
+      }}>
+        <style>{`
+          @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            20%{transform:translateX(-8px)}
+            40%{transform:translateX(8px)}
+            60%{transform:translateX(-6px)}
+            80%{transform:translateX(6px)}
+          }
+        `}</style>
+
+        <div style={{ fontSize:11, letterSpacing:'0.14em', color:'#555', textTransform:'uppercase', marginBottom:8 }}>
+          Trading Engineering
+        </div>
+        <div style={{ fontSize:20, fontWeight:600, color:'#e0e0e0', marginBottom:6 }}>
+          Intuition Trainer
+        </div>
+        <div style={{ fontSize:13, color:'#555', marginBottom:32 }}>
+          Inserisci la password per accedere
+        </div>
+
+        <input
+          type="password"
+          placeholder="password..."
+          value={pwd}
+          onChange={e => { setPwd(e.target.value); setError(false) }}
+          onKeyDown={e => e.key === 'Enter' && tryLogin()}
+          style={{
+            width:'100%', padding:'12px 14px', borderRadius:8,
+            border: error ? '0.5px solid #E24B4A' : '0.5px solid #2a2a2a',
+            background:'#111', color:'#e0e0e0', fontSize:14,
+            outline:'none', marginBottom:12, boxSizing:'border-box',
+            transition:'border 0.2s'
+          }}
+        />
+
+        {error && (
+          <div style={{ fontSize:12, color:'#E24B4A', marginBottom:12 }}>
+            Password errata — riprova
+          </div>
+        )}
+
+        <button onClick={tryLogin} style={{
+          width:'100%', padding:'12px', borderRadius:8,
+          border:'none', background:'#1D9E75', color:'#fff',
+          fontSize:14, fontWeight:500, cursor:'pointer', transition:'opacity 0.15s'
+        }}
+          onMouseOver={e => e.target.style.opacity=0.85}
+          onMouseOut={e => e.target.style.opacity=1}
+        >
+          Accedi →
+        </button>
+
+        <div style={{ fontSize:11, color:'#333', marginTop:24 }}>
+          MQL Suite Academy · Trading Engineering
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const PAIRS = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','EURJPY','GBPJPY','NZDUSD','EURGBP']
 const TFS   = ['M15','H1','H4','D1']
 
@@ -113,6 +197,7 @@ function drawChart(canvas, hist, future, revealed) {
 
 // ── Componente principale ────────────────────────────────────────────────
 export default function Trainer() {
+  const [loggedIn, setLoggedIn] = useState(false)
   const canvasRef = useRef(null)
   const [stats, setStats]       = useState({ total:0, correct:0, streak:0, maxStreak:0 })
   const [pair, setPair]         = useState('EURUSD')
@@ -212,6 +297,8 @@ export default function Trainer() {
 
   const acc = stats.total > 0 ? Math.round(stats.correct/stats.total*100) : null
   const CONF_LABELS = ['','incerto','poco sicuro','abbastanza sicuro','sicuro','certissimo']
+
+  if (!loggedIn) return <LoginScreen onLogin={() => setLoggedIn(true)} />
 
   return (
     <div style={{ maxWidth:820, margin:'0 auto', padding:'24px 16px' }}>
