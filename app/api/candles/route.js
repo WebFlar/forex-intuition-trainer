@@ -1,56 +1,76 @@
 // app/api/candles/route.js
-// Proxy server-side verso Polygon.io — nessun problema CORS
+// Proxy server-side verso Yahoo Finance — gratis, no API key, illimitato
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const pair      = searchParams.get('pair')   || 'EURUSD'
-  const timeframe = searchParams.get('tf')     || 'H1'
-  const limit     = searchParams.get('limit')  || '80'
+  const pair      = searchParams.get('pair')  || 'EURUSD'
+  const timeframe = searchParams.get('tf')    || 'H1'
 
-  const API_KEY = process.env.POLYGON_API_KEY
-  if (!API_KEY) {
-    return Response.json({ error: 'POLYGON_API_KEY non configurata' }, { status: 500 })
-  }
+  // Yahoo Finance simbolo forex: EURUSD=X
+  const symbol = `${pair}=X`
 
-  // Mappa timeframe → moltiplicatore + unità Polygon
+  // Mappa timeframe → interval Yahoo + range storico
   const TF_MAP = {
-    'M5':  { mult: 5,  span: 'minute' },
-    'M15': { mult: 15, span: 'minute' },
-    'M30': { mult: 30, span: 'minute' },
-    'H1':  { mult: 1,  span: 'hour'   },
-    'H4':  { mult: 4,  span: 'hour'   },
-    'D1':  { mult: 1,  span: 'day'    },
+    'M5':  { interval: '5m',  range: '5d'  },
+    'M15': { interval: '15m', range: '1mo' },
+    'M30': { interval: '30m', range: '1mo' },
+    'H1':  { interval: '1h',  range: '2y'  },
+    'H4':  { interval: '1h',  range: '2y', aggregate: 4 },
+    'D1':  { interval: '1d',  range: '5y'  },
   }
   const tf = TF_MAP[timeframe] || TF_MAP['H1']
 
-  // Calcola range date: da 120 giorni fa a oggi
-  const now  = new Date()
-  const from = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
-  const fmt  = d => d.toISOString().split('T')[0]
-
-  // Polygon forex: C:EURUSD formato
-  const symbol = `C:${pair}`
-  const url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${tf.mult}/${tf.span}/${fmt(from)}/${fmt(now)}?adjusted=true&sort=asc&limit=${limit}&apiKey=${API_KEY}`
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=${tf.interval}&range=${tf.range}`
 
   try {
-    const res  = await fetch(url)
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    })
     const data = await res.json()
 
-    if (!data.results || data.results.length === 0) {
-      return Response.json({ error: 'Nessun dato disponibile', raw: data }, { status: 404 })
+    if (!data.chart || !data.chart.result || !data.chart.result[0]) {
+      return Response.json({ error: 'Dati non disponibili', raw: data }, { status: 404 })
     }
 
-    // Normalizza in formato OHLC semplice
-    const candles = data.results.map(r => ({
-      t: r.t,
-      o: r.o,
-      h: r.h,
-      l: r.l,
-      c: r.c,
-      v: r.v
-    }))
+    const result    = data.chart.result[0]
+    const timestamps = result.timestamp || []
+    const quote     = result.indicators.quote[0]
 
-    return Response.json({ candles, pair, timeframe })
+    // Costruisce array OHLC, scarta candele con valori null
+    let candles = timestamps.map((t, i) => ({
+      t: t * 1000,
+      o: quote.open[i],
+      h: quote.high[i],
+      l: quote.low[i],
+      c: quote.close[i],
+      v: quote.volume ? quote.volume[i] : 0
+    })).filter(c => c.o !== null && c.h !== null && c.l !== null && c.c !== null)
+
+    // Se è H4, aggrega 4 candele H1 in una H4
+    if (tf.aggregate === 4) {
+      const aggregated = []
+      for (let i = 0; i < candles.length; i += 4) {
+        const chunk = candles.slice(i, i + 4)
+        if (chunk.length === 0) continue
+        aggregated.push({
+          t: chunk[0].t,
+          o: chunk[0].o,
+          h: Math.max(...chunk.map(c => c.h)),
+          l: Math.min(...chunk.map(c => c.l)),
+          c: chunk[chunk.length - 1].c,
+          v: chunk.reduce((sum, c) => sum + (c.v || 0), 0)
+        })
+      }
+      candles = aggregated
+    }
+
+    if (candles.length === 0) {
+      return Response.json({ error: 'Nessuna candela valida' }, { status: 404 })
+    }
+
+    return Response.json({ candles, pair, timeframe, source: 'yahoo' })
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 })
   }

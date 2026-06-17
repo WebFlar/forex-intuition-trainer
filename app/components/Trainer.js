@@ -85,8 +85,8 @@ function LoginScreen({ onLogin }) {
   )
 }
 
-const PAIRS = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF']
-const TFS   = ['H1','H4','D1']
+const PAIRS = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','EURGBP']
+const TFS   = ['M15','M30','H1','H4','D1']
 
 // ── Audio ────────────────────────────────────────────────────────────────
 let audioCtx = null
