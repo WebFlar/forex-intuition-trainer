@@ -305,9 +305,9 @@ export default function Trainer() {
 
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-        <div style={{ fontSize:11, letterSpacing:'0.12em', color:'#555', textTransform:'uppercase' }}>
-          <span style={{ color:'#e0e0e0', fontWeight:500 }}>Trading Engineering</span> — Intuition Trainer
-        </div>
+        <a href="/" style={{ fontSize:11, letterSpacing:'0.12em', color:'#555', textTransform:'uppercase', textDecoration:'none' }}>
+          ← <span style={{ color:'#e0e0e0', fontWeight:500 }}>TraderGym</span> · Intuition Trainer
+        </a>
         <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, color:'#EF9F27', fontWeight:500 }}>
           🔥 {stats.streak} streak
         </div>
