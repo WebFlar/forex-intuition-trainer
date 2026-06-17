@@ -97,7 +97,21 @@ export default function Landing() {
             </div>
           </Link>
 
-          <RoomCard emoji="📊" title="Pattern Recognition" desc="Identifica testa-spalle, doppi massimi, triangoli e bandiere. Multiple choice con feedback istantaneo." meta="In arrivo" />
+          <Link href="/patterns" style={{ textDecoration:'none', color:'inherit' }}>
+            <div style={{ background:'#141414', border:`0.5px solid ${accent}`, borderRadius:10, padding:22, position:'relative', height:'100%' }}>
+              <div style={{ position:'absolute', top:-9, left:16, background:accent, color:'#0d0d0d', fontSize:9, fontWeight:600, padding:'3px 8px', borderRadius:4, letterSpacing:'0.1em', textTransform:'uppercase' }}>
+                Disponibile
+              </div>
+              <RoomIcon emoji="📊" />
+              <div style={{ fontSize:15, fontWeight:500, color:'#e8e8e8', marginBottom:6 }}>Pattern Recognition</div>
+              <p style={{ fontSize:12, color:'#777', lineHeight:1.5, marginBottom:14 }}>
+                Identifica testa-spalle, doppi massimi, triangoli e bandiere. Multiple choice con feedback istantaneo.
+              </p>
+              <div style={{ display:'flex', gap:10, fontSize:10, color:'#555', letterSpacing:'0.06em', textTransform:'uppercase' }}>
+                7 min · 11 pattern · 3 livelli
+              </div>
+            </div>
+          </Link>
           <RoomCard emoji="🛡️" title="Risk Manager" desc="Simulatore di money management. Allena la disciplina sul size delle posizioni." meta="In arrivo" />
           <RoomCard emoji="📏" title="S/R Drill" desc="Clicca i livelli chiave su grafici puri. Misura la precisione contro i supporti reali." meta="In arrivo" />
           <RoomCard emoji="⚡" title="Reaction Speed" desc="Quanto sei veloce a reagire al breakout? Misura i tempi di esecuzione in millisecondi." meta="In arrivo" />
