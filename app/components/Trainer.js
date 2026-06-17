@@ -85,7 +85,7 @@ function LoginScreen({ onLogin }) {
   )
 }
 
-const PAIRS = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','EURGBP']
+const PAIRS = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','EURJPY','GBPJPY','EURGBP','XAUUSD']
 const TFS   = ['M15','M30','H1','H4','D1']
 
 // ── Audio ────────────────────────────────────────────────────────────────
@@ -154,7 +154,9 @@ function drawChart(canvas, hist, future, revealed) {
     ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=0.5
     ctx.beginPath(); ctx.moveTo(PL,y); ctx.lineTo(W-PR+4,y); ctx.stroke()
     ctx.fillStyle='rgba(170,170,170,0.45)'; ctx.font='9px monospace'; ctx.textAlign='left'
-    ctx.fillText((aH - g*pr/4).toFixed(4), W-PR+7, y+3)
+    const labelVal = aH - g*pr/4
+    const decimals = labelVal > 100 ? 2 : labelVal > 10 ? 3 : 5
+    ctx.fillText(labelVal.toFixed(decimals), W-PR+7, y+3)
   }
 
   // Candele storiche
